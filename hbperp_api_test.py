@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from HuobiDMService import HuobiDM
+from HuobiPerpService import HuobiPerp
 from pprint import pprint
 import setting
 
-dm = HuobiDM(setting.URL, setting.API_KEY, setting.API_SECRET)
+perp = HuobiPerp(setting.URL, setting.API_KEY, setting.API_SECRET)
 
 #%%  market data api ===============
 

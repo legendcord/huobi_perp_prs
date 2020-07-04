@@ -3,9 +3,9 @@
 # copied from huobi github
 # modified by haha
 
-from HuobiDMUtil import http_get_request, api_key_post
+from HuobiUtil import http_get_request, api_key_post
 
-class HuobiDM:
+class HuobiPerp:
 
     def __init__(self,url,access_key,secret_key):
         self.__url = url
@@ -19,23 +19,17 @@ class HuobiDM:
     '''
 
     # 获取合约信息
-    def get_contract_info(self, symbol='', contract_type='', contract_code=''):
+    def get_contract_info(self, contract_code=''):
         """
         参数名称         参数类型  必填    描述
-        symbol          string  false   "BTC","ETH"...
-        contract_type   string  false   合约类型: this_week:当周 next_week:下周 quarter:季度
-        contract_code   string  false   BTC181228
-        备注：如果contract_code填了值，那就按照contract_code去查询，如果contract_code 没有填值，则按照symbol+contract_type去查询
+        contract_code   string  false   BTC-USD(either lower or upper cases)
+        note：if contract_code is empty，get all contracts info
         """
         params = {}
-        if symbol:
-            params['symbol'] = symbol
-        if contract_type:
-            params['contract_type'] = contract_type
         if contract_code:
             params['contract_code'] = contract_code
     
-        url = self.__url + '/api/v1/contract_contract_info'
+        url = self.__url + '/swap-api/v1/swap_contract_info'
         return http_get_request(url, params)
     
     
