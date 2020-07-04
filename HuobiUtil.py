@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Date    : 20180917
-# @Author  : zhaobo
-# @github  : 
+# copied from huobi github
 
 import base64
 import hmac

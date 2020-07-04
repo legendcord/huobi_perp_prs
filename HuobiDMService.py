@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Date    : 20180917
-# @Author  : zhaobo
-# @github  : 
+# copied from huobi github
+# modified by haha
 
 from HuobiDMUtil import http_get_request, api_key_post
 
