@@ -3,7 +3,7 @@
 # copied from huobi github
 # modified by haha
 
-from HuobiUtil import http_get_request, api_key_post
+from restAPI.HuobiUtil import http_get_request, api_key_post
 
 class HuobiPerp:
 
@@ -34,121 +34,153 @@ class HuobiPerp:
     
     
     # 获取合约指数信息
-    def get_contract_index(self, symbol):
+    def get_contract_index(self, contract_code=''):
         """
-        :symbol    "BTC","ETH"...
+        "contract_code   BTC-USD
         """
-        params = {'symbol': symbol}
+        params = {'contract_code': contract_code}
     
-        url = self.__url + '/api/v1/contract_index'
+        url = self.__url + '/swap-api/v1/swap_index'
         return http_get_request(url, params)
     
     
     # 获取合约最高限价和最低限价
-    def get_contract_price_limit(self, symbol='', contract_type='', contract_code=''):
+    def get_contract_price_limit(self, contract_code=''):
         """
-        :symbol          "BTC","ETH"...
-        :contract_type   合约类型: this_week:当周 next_week:下周 quarter:季度
-        "contract_code   BTC180928
-        备注：如果contract_code填了值，那就按照contract_code去查询，如果contract_code 没有填值，则按照symbol+contract_type去查询
+        "contract_code   BTC-USD
         """
         params = {}
-        if symbol:
-            params['symbol'] = symbol
-        if contract_type:
-            params['contract_type'] = contract_type
         if contract_code:
             params['contract_code'] = contract_code
     
-        url = self.__url + '/api/v1/contract_price_limit'
+        url = self.__url + '/swap-api/v1/swap_price_limit'
         return http_get_request(url, params)
     
     
     # 获取当前可用合约总持仓量
-    def get_contract_open_interest(self, symbol='', contract_type='', contract_code=''):
+    def get_contract_open_interest(self, contract_code=''):
         """
-        :symbol          "BTC","ETH"...
-        :contract_type   合约类型: this_week:当周 next_week:下周 quarter:季度
-        "contract_code   BTC180928
-        备注：如果contract_code填了值，那就按照contract_code去查询，如果contract_code 没有填值，则按照symbol+contract_type去查询
+        "contract_code   BTC-USD
         """
-        params = {'symbol': symbol,
-                  'contract_type': contract_type,
-                  'contract_code': contract_code}
+        params = {}
+        if contract_code:
+            params['contract_code'] = contract_code
     
-        url = self.__url + '/api/v1/contract_open_interest'
+        url = self.__url + '/swap-api/v1/swap_open_interest'
         return http_get_request(url, params)   
         
     
     # 获取行情深度
-    def get_contract_depth(self, symbol, type):
+    def get_contract_depth(self, contract_code, type):
         """
-        :param symbol:   BTC_CW, BTC_NW, BTC_CQ , ...
-        :param type: 可选值：{ step0, step1, step2, step3, step4, step5 （合并深度0-5）；step0时，不合并深度 }
-        :return:
+        :contract_code:   BTC-USD
+        :`type: 可选值：(150档数据) step0, step1, step2, step3, step4, step5（合并深度1-5）；step0时，不合并深度, (20档数据) step6, step7, step8, step9, step10, step11（合并深度7-11）；step6时，不合并深度
         """
-        params = {'symbol': symbol,
+        params = {'contract_code': contract_code,
                   'type': type}
     
-        url = self.__url + '/market/depth'
+        url = self.__url + '/swap-ex/market/depth'
         return http_get_request(url, params)
     
     
     # 获取KLine
-    def get_contract_kline(self, symbol, period, size=150):
+    def get_contract_kline(self, contract_code, period, size=150):
         """
-        :param symbol  BTC_CW, BTC_NW, BTC_CQ , ...
+        :param contract_code  BTC-USD , ...
         :param period: 可选值：{1min, 5min, 15min, 30min, 60min, 4hour, 1day, 1week, 1mon }
         :param size: [1,2000]
-        :return:
+        :return: this returns PARTIAL kline data
         """
-        params = {'symbol': symbol,
+        params = {'contract_code': contract_code,
                   'period': period}
         if size:
             params['size'] = size
     
-        url = self.__url + '/market/history/kline'
+        url = self.__url + '/swap-ex/market/history/kline'
         return http_get_request(url, params)
     
     
     # 获取聚合行情
-    def get_contract_market_merged(self, symbol):
+    def get_contract_market_merged(self, contract_code):
         """
-        :symbol	    "BTC_CW","BTC_NW", "BTC_CQ" ...
+        :contract_code	    "BTC-USD", ...
         """
-        params = {'symbol': symbol}
+        params = {'contract_code': contract_code}
     
-        url = self.__url + '/market/detail/merged'
+        url = self.__url + '/swap-ex/market/detail/merged'
         return http_get_request(url, params)
     
     
     # 获取市场最近成交记录
-    def get_contract_trade(self, symbol, size=1):
+    def get_contract_trade(self, contract_code):
         """
-        :param symbol: 可选值：{ BTC_CW, BTC_NW, BTC_CQ, etc. }
+        :param contract_code: 可选值：{ BTC-USD, etc. }
         :return:
         """
-        params = {'symbol': symbol,
-                  'size' : size}
+        params = {'contract_code': contract_code}
     
-        url = self.__url + '/market/trade'
+        url = self.__url + '/swap-ex/market/trade'
         return http_get_request(url, params)
     
     
     # 批量获取最近的交易记录
-    def get_contract_batch_trade(self, symbol, size=1):
+    def get_contract_batch_trade(self, contract_code, size=1):
         """
-        :param symbol: 可选值：{ BTC_CW, BTC_NW, BTC_CQ, etc. }, size: int
+        :param contract_code: 可选值：{ BTC-USD, etc. }, size: int
         :return:
         """
-        params = {'symbol': symbol,
+        params = {'contract_code': contract_code,
                   'size' : size}
     
-        url = self.__url + '/market/history/trade'
+        url = self.__url + '/swap-ex/market/history/trade'
         return http_get_request(url, params)
     
-    
-    
+    # 查询合约风险准备金余额和预估分摊比例
+    def get_contract_risk_info(self, contract_code=''):
+        params = {}
+        if contract_code:
+            params["contract_code"] = contract_code
+
+        url = self.__url + '/swap-api/v1/swap_risk_info'
+        return http_get_request(url, params)
+            
+
+    # 查询合约风险准备金余额历史数据
+    def get_contract_insurance_fund(self, contract_code, page_index=1, page_size=100):
+        params = {'contract_code': contract_code}
+        if page_index:
+            params['page_index'] = page_index
+        if page_size:
+            params['page_size'] = page_size
+            
+        url = self.__url + '/swap-api/v1/swap_insurance_fund'
+        return http_get_request(url, params)
+
+
+    # 查询平台阶梯调整系数
+    def get_contract_adjustfactor(self, contract_code):
+        params = {'contract_code': contract_code}
+        
+        url = self.__url + '/swap-api/v1/swap_adjustfactor'
+        return http_get_request(url, params)
+
+
+    def get_contract_his_open_interest(self, contract_code, period, amount_type, size=48):
+        """
+        :param period: '60min', '4hour', '12hour', '1day'
+        :param amount_type 1:number of contract, 2:number of coins
+        :size [1, 200]
+        """
+        params = {'contract_code':contract_code,
+                  'period':period,
+                  'amount_type':amount_type}
+        if size:
+            params['size'] = size
+
+        url = self.__url + '/swap-api/v1/swap_his_open_interest'
+        return http_get_request(url, params)
+
+
     
     
     

@@ -1,2 +1,8 @@
 #ignore emacs tmp files
 *~
+
+#ignore setting files
+setting*
+
+#ignore
+__pycache__/
