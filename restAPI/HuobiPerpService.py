@@ -181,7 +181,72 @@ class HuobiPerp:
         return http_get_request(url, params)
 
 
+    # 精英账户多空持仓对比-账户数
+    def get_contract_elite_account_ratio(self, contract_code, period):
+        """
+        :param contract_code BTC-USD
+        :param period: 5min, 15min, 30min, 60min, 4hour, '1day'
+        """
+        params = {'contract_code':contract_code,
+                  'period':period}        
+
+        url = self.__url + '/swap-api/v1/swap_elite_account_ratio'
+        return http_get_request(url, params)
+        
     
+    # 精英账户多空持仓对比-持仓量
+    def get_contract_elite_position_ratio(self, contract_code, period):
+        """
+        :param contract_code BTC-USD
+        :param period: 5min, 15min, 30min, 60min, 4hour, '1day'
+        """
+        params = {'contract_code':contract_code,
+                  'period':period}        
+
+        url = self.__url + '/swap-api/v1/swap_elite_position_ratio'
+        return http_get_request(url, params)
+
+
+    # 查询系统状态
+    def get_api_state(self, contract_code):
+        """
+        :param contract_code BTC-USD
+        """
+        params = {'contract_code':contract_code}
+
+        url = self.__url + '/swap-api/v1/swap_api_state'
+        return http_get_request(url, params)        
+        
+
+    # 获取合约的资金费率
+    def get_funding_rate(self, contract_code):
+        """
+        :param contract_code BTC-USD
+        """
+        params = {'contract_code':contract_code}
+
+        url = self.__url + '/swap-api/v1/swap_funding_rate'
+        return http_get_request(url, params)        
+
+
+    # 获取强平订单
+    def get_liquidation_orders(self, contract_code, trade_type, create_date, page_index=1, page_size=20):
+        """
+        :param trade_type when “0”, request fully filled liquidated orders; when “5’, request liquidated close orders; when “6”, request liquidated open orders
+        :param create_date 7, 90 ( 7 days or 90 days )
+        """
+        url = self.__url + '/swap-api/v1/swap_liquidation_orders'
+        params = {'contract_code':contract_code,
+                  'trade_type':trade_type,
+                  'create_date':create_date}
+        return http_get_request(url, params)        
+
+
+    # 获取合约的溢价指数K线
+
+    # 获取实时预测资金费率的K线数据
+
+    # 获取基差数据
     
     
     '''
@@ -191,105 +256,107 @@ class HuobiPerp:
     '''
     
     # 获取用户账户信息
-    def get_contract_account_info(self, symbol=''):
+    def get_contract_account_info(self, contract_code=''):
         """
-        :param symbol: "BTC","ETH"...如果缺省，默认返回所有品种
+        :param contract_code: "BTC-USD","ETH-USD"...如果缺省，默认返回所有品种
         :return:
         """
         
         params = {}
-        if symbol:
-            params["symbol"] = symbol
+        if contract_code:
+            params["contract_code"] = contract_code
     
-        request_path = '/api/v1/contract_account_info'
+        request_path = '/swap-api/v1/swap_account_info'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     
     # 获取用户持仓信息
-    def get_contract_position_info(self, symbol=''):
+    def get_contract_position_info(self, contract_code=''):
         """
-        :param symbol: "BTC","ETH"...如果缺省，默认返回所有品种
+        :param contract_code: "BTC-USD","ETH-USD"...如果缺省，默认返回所有品种
         :return:
         """
         
         params = {}
-        if symbol:
-            params["symbol"] = symbol
+        if contract_code:
+            params["contract_code"] = contract_code
     
-        request_path = '/api/v1/contract_position_info'
+        request_path = '/swap-api/v1/swap_position_info'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
+
+    # 查询用户账户和持仓信息
+    def get_contract_account_position_info(self, contract_code=''):
+        """
+        :param contract_code: "BTC-USD","ETH-USD"...如果缺省，默认返回所有品种
+        :return:
+        """        
+        params = {}
+        if contract_code:
+            params["contract_code"] = contract_code
     
+        request_path = '/swap-api/v1/swap_account_position_info'
+        return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
+        
     
     # 合约下单
-    def send_contract_order(self, symbol, contract_type, contract_code, 
-                            client_order_id, price,volume,direction,offset,
-                            lever_rate,order_price_type):
+    def send_contract_order(self, contract_code, client_order_id, price, volume,
+                            direction, offset, lever_rate, order_price_type):
         """
-        :symbol: "BTC","ETH"..
-        :contract_type: "this_week", "next_week", "quarter"
-        :contract_code: "BTC181228"
-        :client_order_id: 客户自己填写和维护，这次一定要大于上一次
+        :contract_code: "BTC-USD"
+        :client_order_id: 客户自己填写和维护，必须为数字, 请注意必须小于等于9223372036854775807
         :price             必填   价格
         :volume            必填  委托数量（张）
         :direction         必填  "buy" "sell"
         :offset            必填   "open", "close"
-        :lever_rate        必填  杠杆倍数
-        :order_price_type  必填   "limit"限价， "opponent" 对手价
-        备注：如果contract_code填了值，那就按照contract_code去下单，如果contract_code没有填值，则按照symbol+contract_type去下单。
-        :
-        """
-        
-        params = {"price": price,
+        :lever_rate        必填  杠杆倍数[“开仓”若有10倍多单，就不能再下20倍多单;首次使用高倍杠杆(>20倍)，请使用主账号登录web端同意高倍杠杆协议后，才能使用接口下高倍杠杆(>20倍)]
+        :order_price_type  必填   订单报价类型 
+            "limit":限价 
+            "opponent":对手价 
+            "post_only":只做maker单,post only下单只受用户持仓数量限制,
+            optimal_5：最优5档、optimal_10：最优10档、optimal_20：最优20档，
+            "fok":FOK订单，"ioc":IOC订单, opponent_ioc"： 对手价-IOC下单，"optimal_5_ioc"：最优5档-IOC下单，"optimal_10_ioc"：最优10档-IOC下单，"optimal_20_ioc"：最优20档-IOC下单,
+            "opponent_fok"： 对手价-FOK下单，"optimal_5_fok"：最优5档-FOK下单，"optimal_10_fok"：最优10档-FOK下单，"optimal_20_fok"：最优20档-FOK下单
+        """        
+        params = {"contract_code": contract_code,
+                  "price": price,
                   "volume": volume,
                   "direction": direction,
                   "offset": offset,
                   "lever_rate": lever_rate,
                   "order_price_type": order_price_type}
-        if symbol:
-            params["symbol"] = symbol
-        if contract_type:
-            params['contract_type'] = contract_type
-        if contract_code:
-            params['contract_code'] = contract_code
         if client_order_id:
             params['client_order_id'] = client_order_id
     
-        request_path = '/api/v1/contract_order'
+        request_path = '/swap-api/v1/swap_order'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
-    # trigger order
-    def send_contract_trigger_order(self, symbol, contract_type, contract_code, trigger_type, trigger_price,
+    # 合约计划委托下单
+    def send_contract_trigger_order(self, contract_code, trigger_type, trigger_price,
                                     order_price, order_price_type, volume, direction, offset, lever_rate):
         """
-        :symbol(false): "BTC", "ETH"...
-        :contract_type(false): "this_week", "next_week", "quarter"
-        :contract_code(false): "BTC190903"
+        :contract_code(true): "BTC-USD"
         :trigger_type(true): "ge"(trigger price greater than current price); "le"(trigger_price less than current price)
         :trigger_price(true): least decimal point has to be larger than min tick size
-        :order_price(true):
+        :order_price(false): 委托价，精度超过最小变动单位会报错
         :order_price_type(false): limit(default); optimal_5; optimal_10; optimal_20
         :volume(true): int type - number of sheets
         :direction(true): "buy", "sell"
         :offset(true): "open", "close"
-        :lever_rate(true): int - leverage number
+        :lever_rate(false): int - 开仓必须填写，平仓可以不填。杠杆倍数[开仓若有10倍多单，就不能再下20倍多单]
         """
-        params = {"trigger_type": trigger_type,
+        params = {"contract_code":contract_code,
+                  "trigger_type": trigger_type,
                   "trigger_price":trigger_price,
-                  "order_price":order_price,
                   "volume":volume,
                   "direction":direction,
                   "offset":offset,
                   "lever_rate":lever_rate}
-        if symbol:
-            params["symbol"] = symbol
-        if contract_type:
-            params["contract_type"] = contract_type
-        if contract_code:
-            params["contract_code"] = contract_code
+        if order_price:
+            params["order_price"] = order_price
         if order_price_type:
             params["order_price_type"] = order_price_type
-        request_path = '/api/v1/contract_trigger_order'
+        request_path = '/swap-api/v1/swap_trigger_order'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     # 合约批量下单
@@ -297,177 +364,154 @@ class HuobiPerp:
         """
         orders_data: example:
         orders_data = {'orders_data': [
-               {'symbol': 'BTC', 'contract_type': 'quarter',  
-                'contract_code':'BTC181228',  'client_order_id':'', 
+               {'contract_code':'BTC-USD',  'client_order_id':'', 
                 'price':1, 'volume':1, 'direction':'buy', 'offset':'open', 
                 'leverRate':20, 'orderPriceType':'limit'},
-               {'symbol': 'BTC','contract_type': 'quarter', 
-                'contract_code':'BTC181228', 'client_order_id':'', 
+               {'contract_code':'BTC181228', 'client_order_id':'', 
                 'price':2, 'volume':2, 'direction':'buy', 'offset':'open', 
-                'leverRate':20, 'orderPriceType':'limit'}]}    
-            
+                'leverRate':20, 'orderPriceType':'limit'}]}                
         Parameters of each order: refer to send_contract_order
         """
         
         params = orders_data
-        request_path = '/api/v1/contract_batchorder'
+        request_path = '/swap-api/v1/swap_batchorder'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     
     # 撤销订单
-    def cancel_contract_order(self, symbol, order_id='', client_order_id=''):
+    def cancel_contract_order(self, contract_code, order_id='', client_order_id=''):
         """
         参数名称          是否必须 类型     描述
-        symbol           true   string  BTC, ETH, ...
-        order_id	         false  string  订单ID（ 多个订单ID中间以","分隔,一次最多允许撤消50个订单 ）
-        client_order_id  false  string  客户订单ID(多个订单ID中间以","分隔,一次最多允许撤消50个订单)
+        contract_code     true   string  BTC-USD, ETH-USD, ...
+        order_id	         false  string  订单ID(多个订单ID中间以","分隔,一次最多允许撤消10个订单)
+        client_order_id  false  string  客户订单ID(多个订单ID中间以","分隔,一次最多允许撤消10个订单)
         备注： order_id 和 client_order_id都可以用来撤单，同时只可以设置其中一种，如果设置了两种，默认以order_id来撤单。
-        """
-        
-        params = {"symbol": symbol}
+        撤单接口返回结果只代表撤单命令发送成功，建议根据订单查询接口查询订单的状态来确定订单是否已真正撤销。
+        """        
+        params = {"contract_code": contract_code}
         if order_id:
             params["order_id"] = order_id
         if client_order_id:
             params["client_order_id"] = client_order_id  
     
-        request_path = '/api/v1/contract_cancel'
+        request_path = '/swap-api/v1/swap_cancel'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
 
-    # cancel trigger order
-    def cancel_trigger_contract_order(self, symbol, order_id):
-        params = {"symbol": symbol,
-                  "order_id": order_id}
-        request_path = '/api/v1/contract_trigger_cancel'
+    # 合约计划委托撤单
+    def cancel_trigger_contract_order(self, contract_code, order_id):
+        params = {"contract_cod": contract_code, "order_id": order_id}
+        request_path = '/swap-api/v1/swap_trigger_cancel'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     # 全部撤单
-    def cancel_all_contract_order(self, symbol, contract_code):
-        """
-        symbol: BTC, ETH, ...
-        """
-        
-        params = {"symbol": symbol,
-                  "contract_code": contract_code}
+    def cancel_all_contract_order(self, contract_code):        
+        params = {"contract_code": contract_code}
     
-        request_path = '/api/v1/contract_cancelall'
+        request_path = 'swap-/api/v1/swap_cancelall'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     # cancel all trigger order
-    def cancel_all_trigger_contract_order(self, symbol, contract_code, contract_type):
+    def cancel_all_trigger_contract_order(self, contract_code):
         """
         param_name     type    non-optional   description
-        symbol string    string   true              BTC, LTC, ...
-        contract_code   string    false             BTC180914
-        contract_type    string   false             this_week, next_week, quarter 
+        contract_code   string    false             BTC-USD
         """
-        params = {"symbol": symbol}
-        if contract_code:
-            params["contract_code"] = contract_code
-        if contract_type:
-            params["contract_type"] = contract_type
-        request_path = '/api/v1/contract_trigger_cancelall'
+        params = {"contract_code": contract_code}
+        request_path = '/swap-api/v1/swap_trigger_cancelall'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     # 获取合约订单信息
-    def get_contract_order_info(self, symbol, order_id='', client_order_id=''):
+    def get_contract_order_info(self, contract_code, order_id='', client_order_id=''):
         """
         参数名称	        是否必须	类型	    描述
-        symbol          true    string  BTC, ETH, ...
-        order_id	        false	string	订单ID（ 多个订单ID中间以","分隔,一次最多允许查询20个订单 ）
-        client_order_id	false	string	客户订单ID(多个订单ID中间以","分隔,一次最多允许查询20个订单)
+        contract_code    true    string  BTC-USD, ETH-USD, ...
+        order_id	        false	string	订单ID（ 多个订单ID中间以","分隔,一次最多允许查询50个订单 ）
+        client_order_id	false	string	客户订单ID(多个订单ID中间以","分隔,一次最多允许查询50个订单)
         备注：order_id和client_order_id都可以用来查询，同时只可以设置其中一种，如果设置了两种，默认以order_id来查询。
         """
         
-        params = {"symbol": symbol}
+        params = {"contract_code": contract_code}
         if order_id:
             params["order_id"] = order_id
         if client_order_id:
             params["client_order_id"] = client_order_id  
     
-        request_path = '/api/v1/contract_order_info'
+        request_path = '/swap-api/v1/swap_order_info'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     
-    # 获取合约订单明细信息
-        
-    def get_contract_order_detail(self, symbol, order_id, order_type, created_at, page_index=None, page_size=None):
+    # 获取合约订单明细信息        
+    def get_contract_order_detail(self, contract_code, order_id, order_type, created_at, page_index=None, page_size=None):
         """
         参数名称     是否必须  类型    描述
-        symbol      true	    string "BTC","ETH"...
+        contract_code  true	    string "BTC-USD","ETH-USD"...
         order_id    true	    long	   订单id
-        order_type  true    int    订单类型。1:报单， 2:撤单， 3:爆仓， 4:交割
-        created_at  true    number 订单创建时间
+        order_type  true    int    订单类型。1:报单， 2:撤单， 3:强平/爆仓， 4:交割
+        created_at  true    number 下单时间戳
         page_index  false   int    第几页,不填第一页
         page_size   false   int    不填默认20，不得多于50
-        """
-        
-        params = {"symbol": symbol,
+        """        
+        params = {"contract_code": contract_code,
                   "order_id": order_id,
-                  "order_type": order_type,
-                  "created_at": created_at}
+                  "order_type": order_type}
+        if created_at:
+            params["created_at"] = created_at
         if page_index:
             params["page_index"] = page_index
         if page_size:
             params["page_size"] = page_size  
     
-        request_path = '/api/v1/contract_order_detail'
+        request_path = '/swap-api/v1/swap_order_detail'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     
     # 获取合约当前未成交委托
-    def get_contract_open_orders(self, symbol=None, page_index=None, page_size=None):
+    def get_contract_open_orders(self, contract_code, page_index=1, page_size=20):
         """
         参数名称     是否必须  类型   描述
-        symbol      false   string "BTC","ETH"...
+        symbol      false   string "BTC-USD","ETH-USD"...
         page_index  false   int    第几页,不填第一页
         page_size   false   int    不填默认20，不得多于50
-        """
-        
-        params = {}
-        if symbol:
-            params["symbol"] = symbol
+        """        
+        params = {"contract_code":contract_code}
         if page_index:
             params["page_index"] = page_index
         if page_size:
             params["page_size"] = page_size  
     
-        request_path = '/api/v1/contract_openorders'
+        request_path = '/swap-api/v1/swap_openorders'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
-    # get open trigger orders
-    def get_contract_open_trigger_orders(self, symbol, contract_code, page_index, page_size):
+    # 获取计划委托当前委托
+    def get_contract_open_trigger_orders(self, contract_code, page_index=1, page_size=20):
         """
         param_name    type     non-optional  description
-        symbol            string    true              BTC, LTC, ...    
-        contract_code   string   false              BTC200925
+        contract_code   string    true              BTC-USD, LTC-USD, ...
         page_index      int        false              default is first page
         page_size         int       false              default is 20, has to be less than 50
         """
-        params = {"symbol":symbol}
-        if contract_code:
-            params["contract_code"] = contract_code
+        params = {"contract_code":contract_code}
         if page_index:
             params["page_index"] = page_index
         if page_size:
             params["page_size"] = page_size
-        request_path = '/api/v1/contract_trigger_openorders'
+        request_path = '/swap-api/v1/swap_trigger_openorders'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     # 获取合约历史委托
-    def get_contract_history_orders(self, symbol, trade_type, type, status, create_date,
-                                    page_index=None, page_size=None):
+    def get_contract_history_orders(self, contract_code, trade_type, type, status, create_date,
+                                    page_index=1, page_size=20):
         """
         参数名称     是否必须  类型     描述	    取值范围
-        symbol      true	    string  品种代码  "BTC","ETH"...
-        trade_type  true	    int     交易类型  0:全部,1:买入开多,2: 卖出开空,3: 买入平空,4: 卖出平多,5: 卖出强平,6: 买入强平,7:交割平多,8: 交割平空
+        contract_code      true	    string  品种代码  "BTC-USD","ETH-USD"...
+        trade_type  true	    int     交易类型  0:全部,1:买入开多,2: 卖出开空,3: 买入平空,4: 卖出平多,5: 卖出强平,6: 买入强平,7:交割平多,8: 交割平空; 11:减仓平多，12:减仓平空
         type        true	    int     类型     1:所有订单、2：结束汏订单
         status      true	    int     订单状态  0:全部,3:未成交, 4: 部分成交,5: 部分成交已撤单,6: 全部成交,7:已撤单
-        create_date true	    int     日期     7，90（7天或者90天）
+        create_date true	    int     日期     可随意输入正整数，如果参数超过90则默认查询90天的数据
         page_index  false   int     页码，不填默认第1页		
         page_size   false   int     不填默认20，不得多于50
-        """
-        
-        params = {"symbol": symbol,
+        """        
+        params = {"contract_code": contract_code,
                   "trade_type": trade_type,
                   "type": type,
                   "status": status,
@@ -477,9 +521,11 @@ class HuobiPerp:
         if page_size:
             params["page_size"] = page_size  
     
-        request_path = '/api/v1/contract_hisorders'
+        request_path = '/swap-api/v1/swap_hisorders'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
 
+    xxx left here
+    
     # trigger order history
     def get_contract_history_trigger_orders(self, symbol, contract_code, trade_type, status, create_date,
                                             page_index, page_size):

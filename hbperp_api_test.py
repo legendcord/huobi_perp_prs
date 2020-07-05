@@ -3,9 +3,9 @@
 
 from restAPI.HuobiPerpService import HuobiPerp
 from pprint import pprint
-import setting
+import setting_btc
 
-perp = HuobiPerp(setting.URL, setting.API_KEY, setting.API_SECRET)
+perp = HuobiPerp(setting_btc.URL, setting_btc.API_KEY, setting_btc.API_SECRET)
 
 #%%  market data api ===============
 
@@ -45,28 +45,44 @@ contract_code = "BTC-USD"
 #pprint (perp.get_contract_insurance_fund(contract_code=contract_code))
 
 #print(u' 查询平台阶梯调整系数 ')
-#print(perp.get_contract_adjustfactor(contract_code=contract_code))
+#pprint(perp.get_contract_adjustfactor(contract_code=contract_code))
 
-#print(perp.get_contract_his_open_interest(contract_code=contract_code, period='4hour', amount_type=1))
+#pprint(perp.get_contract_his_open_interest(contract_code=contract_code, period='4hour', amount_type=1))
+
+#print(u ' 精英账户多空持仓对比-账户数 ')
+#pprint(perp.get_contract_elite_account_ratio(contract_code=contract_code, period='4hour'))
+
+#print(u ' 精英账户多空持仓对比-持仓量 ')
+#pprint(perp.get_contract_elite_position_ratio(contract_code=contract_code, period='4hour'))
+
+#print(u ' 查询系统状态 ')
+#pprint(perp.get_api_state(contract_code=contract_code))
+
+#print(u ' 获取合约的资金费率 ')
+#pprint(perp.get_funding_rate(contract_code=contract_code))
+
+#print(u ' 获取强平订单 ')
+#pprint(perp.get_liquidation_orders(contract_code=contract_code, ...))
+
 
 
 #%% trade / account api  ===============
 
-'''
-print (u' 获取用户账户信息 ')
-pprint (perp.get_contract_account_info())
-pprint (perp.get_contract_account_info("BTC"))
+#print (u' 获取用户账户信息 ')
+#pprint (perp.get_contract_account_info())
+#pprint (perp.get_contract_account_info(contract_code))
 
-print (u' 获取用户持仓信息 ')
-pprint (perp.get_contract_position_info())
-pprint (perp.get_contract_position_info("BTC"))
+#print (u' 获取用户持仓信息 ')
+#pprint (perp.get_contract_position_info())
+#pprint (perp.get_contract_position_info(contract_code))
+
+#pprint (perp.get_contract_account_position_info(contract_code))
 
 print (u' 合约下单 ')
 pprint(perp.send_contract_order(symbol='', contract_type='', contract_code='BTC181228', 
                         client_order_id='', price=10000, volume=1, direction='sell',
                         offset='open', lever_rate=5, order_price_type='limit'))
-
-
+'''
 print (u' 合约批量下单 ')
 orders_data = {'orders_data': [
                {'symbol': 'BTC', 'contract_type': 'quarter',  
