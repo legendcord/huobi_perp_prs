@@ -3,13 +3,16 @@
 
 from restAPI.HuobiPerpService import HuobiPerp
 from pprint import pprint
-import setting_btc
-
-perp = HuobiPerp(setting_btc.URL, setting_btc.API_KEY, setting_btc.API_SECRET)
-
-#%%  market data api ===============
+#import setting_btc
+import setting
 
 contract_code = "BTC-USD"
+#perp = HuobiPerp(setting_btc.URL, setting_btc.API_KEY, setting_btc.API_SECRET)
+
+contract_code = "ETH-USD"
+perp = HuobiPerp(setting.URL, setting.API_KEY, setting.API_SECRET)
+
+#%%  market data api ===============
 
 #print (u' 获取合约信息 ')
 #pprint (perp.get_contract_info(contract_code=contract_code))
@@ -78,41 +81,55 @@ contract_code = "BTC-USD"
 
 #pprint (perp.get_contract_account_position_info(contract_code))
 
-print (u' 合约下单 ')
-pprint(perp.send_contract_order(symbol='', contract_type='', contract_code='BTC181228', 
-                        client_order_id='', price=10000, volume=1, direction='sell',
-                        offset='open', lever_rate=5, order_price_type='limit'))
-'''
-print (u' 合约批量下单 ')
-orders_data = {'orders_data': [
-               {'symbol': 'BTC', 'contract_type': 'quarter',  
-                'contract_code':'BTC181228',  'client_order_id':'', 
-                'price':10000, 'volume':1, 'direction':'sell', 'offset':'open', 
-                'leverRate':5, 'orderPriceType':'limit'},
-               {'symbol': 'BTC','contract_type': 'quarter', 
-                'contract_code':'BTC181228', 'client_order_id':'', 
-                'price':20000, 'volume':2, 'direction':'sell', 'offset':'open', 
-                'leverRate':5, 'orderPriceType':'limit'}]}
-pprint(perp.send_contract_batchorder(orders_data))
 
+#print (u' 合约下单 ')
+#pprint(perp.send_contract_order(contract_code=contract_code, 
+#                        client_order_id='', price=250, volume=1, direction='sell',
+#                        offset='open', lever_rate=5, order_price_type='limit'))
 
-print (u' 撤销订单 ')
-pprint(perp.cancel_contract_order(symbol='BTC', order_id='42652161'))
+#print (u' 合约批量下单 ')
+#orders_data = {'orders_data': [
+#               {'contract_code':contract_code,  'client_order_id':'', 
+#                'price':250, 'volume':1, 'direction':'sell', 'offset':'open', 
+#                'leverRate':5, 'orderPriceType':'limit'},
+#               {'contract_code':contract_code, 'client_order_id':'', 
+#                'price':260, 'volume':2, 'direction':'sell', 'offset':'open', 
+#                'leverRate':5, 'orderPriceType':'limit'}]}
+#pprint(perp.send_contract_batchorder(orders_data))
 
-print (u' 全部撤单 ')
-pprint(perp.cancel_all_contract_order(symbol='BTC'))
+#print (u' 撤销订单 ')
+#pprint(perp.cancel_contract_order(contract_code, order_id='729668420622188546'))
 
-print (u' 获取合约订单信息 ')
-pprint(perp.get_contract_order_info(symbol='BTC', order_id='42652161'))
+#print (u' 全部撤单 ')
+#pprint(perp.cancel_all_contract_order(contract_code))
 
-print (u' 获取合约订单明细信息 ')
-pprint(perp.get_contract_order_detail(symbol='BTC', order_id='42652161', order_type=1, created_at=1542097630215))
+#print (u' 获取合约订单信息 ')
+#pprint(perp.get_contract_order_info(contract_code, order_id='729668420622188546'))
 
-print (u' 获取合约当前未成交委托 ')
-pprint(perp.get_contract_open_orders(symbol='BTC'))
+#print (u' 获取合约订单明细信息 ')
+#pprint(perp.get_contract_order_detail(contract_code, order_id='729668420622188546', order_type=1, created_at=1594008108061))
+#pprint(perp.get_contract_order_detail(contract_code, order_id='729668420622188546', order_type=1))
 
-print (u' 获取合约历史委托 ')
-pprint (perp.get_contract_history_orders(symbol='BTC', trade_type=0, type=1, status=0, create_date=7))
-'''
+#print (u' 获取合约当前未成交委托 ')
+#pprint(perp.get_contract_open_orders(contract_code))
 
+#print (u' 获取合约历史委托 ')
+#pprint (perp.get_contract_history_orders(contract_code, trade_type=0, type=1, status=0, create_date=7))
 
+#print(u' 合约计划委托下单 ')
+#pprint(perp.send_contract_trigger_order(contract_code=contract_code, trigger_type="ge", trigger_price=250,
+#                                        order_price_type='optimal_20', volume=1, direction="buy", offset="open", lever_rate=5))
+
+#print(u' 合约计划委托撤单 ')
+#pprint(perp.cancel_trigger_contract_order(contract_code=contract_code, order_id=1909842))
+
+#pprint(perp.cancel_all_trigger_contract_order(contract_code))
+
+#print(u' 获取计划委托当前委托 ')
+#pprint(perp.get_contract_open_trigger_orders(contract_code, page_index=1, page_size=20))
+
+#print(u' trigger order history ')
+#pprint(perp.get_contract_history_trigger_orders(contract_code, trade_type=0, status=0, create_date=90))
+
+#print(u' 闪电平仓下单')
+#pprint(perp.lightning_close_position(contract_code, 1, "buy"))

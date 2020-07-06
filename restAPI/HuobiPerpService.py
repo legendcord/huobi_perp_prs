@@ -333,7 +333,7 @@ class HuobiPerp:
     
     # 合约计划委托下单
     def send_contract_trigger_order(self, contract_code, trigger_type, trigger_price,
-                                    order_price, order_price_type, volume, direction, offset, lever_rate):
+                                    order_price_type, volume, direction, offset, lever_rate, order_price=None):
         """
         :contract_code(true): "BTC-USD"
         :trigger_type(true): "ge"(trigger price greater than current price); "le"(trigger_price less than current price)
@@ -399,7 +399,7 @@ class HuobiPerp:
 
     # 合约计划委托撤单
     def cancel_trigger_contract_order(self, contract_code, order_id):
-        params = {"contract_cod": contract_code, "order_id": order_id}
+        params = {"contract_code": contract_code, "order_id": order_id}
         request_path = '/swap-api/v1/swap_trigger_cancel'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
@@ -407,7 +407,7 @@ class HuobiPerp:
     def cancel_all_contract_order(self, contract_code):        
         params = {"contract_code": contract_code}
     
-        request_path = 'swap-/api/v1/swap_cancelall'
+        request_path = '/swap-api/v1/swap_cancelall'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
     
     # cancel all trigger order
@@ -428,6 +428,8 @@ class HuobiPerp:
         order_id	        false	string	订单ID（ 多个订单ID中间以","分隔,一次最多允许查询50个订单 ）
         client_order_id	false	string	客户订单ID(多个订单ID中间以","分隔,一次最多允许查询50个订单)
         备注：order_id和client_order_id都可以用来查询，同时只可以设置其中一种，如果设置了两种，默认以order_id来查询。
+        return:
+        status	true	int	订单状态	(1准备提交 2准备提交 3已提交 4部分成交 5部分成交已撤单 6全部成交 7已撤单 10失败 11撤单中)
         """
         
         params = {"contract_code": contract_code}
@@ -441,7 +443,7 @@ class HuobiPerp:
     
     
     # 获取合约订单明细信息        
-    def get_contract_order_detail(self, contract_code, order_id, order_type, created_at, page_index=None, page_size=None):
+    def get_contract_order_detail(self, contract_code, order_id, order_type, created_at=None, page_index=None, page_size=None):
         """
         参数名称     是否必须  类型    描述
         contract_code  true	    string "BTC-USD","ETH-USD"...
@@ -524,11 +526,11 @@ class HuobiPerp:
         request_path = '/swap-api/v1/swap_hisorders'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)
 
-    xxx left here
+    #xxx left here
     
     # trigger order history
-    def get_contract_history_trigger_orders(self, symbol, contract_code, trade_type, status, create_date,
-                                            page_index, page_size):
+    def get_contract_history_trigger_orders(self, contract_code, trade_type, status, create_date,
+                                            page_index=1, page_size=20):
         """
         param_name     type        non-optional   description
         symbol              string      true               BTC, ETH,...
@@ -539,39 +541,34 @@ class HuobiPerp:
         page_index         int          false              page number default 1
         page_size           int           false             default 20, less than 50
         """
-        params = {"symbol":symbol,
+        params = {"contract_code":contract_code,
                   "trade_type":trade_type,
                   "status":status,
                   "create_date":create_date}
-        if contract_code:
-            params["contract_code"] = contract_code
         if page_index:
             params["page_index"] = page_index
         if page_size:
             params["page_size"] = page_size
-        request_path = '/api/v1/contract_trigger_hisorders'
+        request_path = '/swap-api/v1/swap_trigger_hisorders'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)        
 
-    # lightning close position
-    def lightning_close_position(self, symbol, contract_type, contract_code, volume, direction,
-                                 client_order_id, order_price_type):
+    # 闪电平仓下单
+    def lightning_close_position(self, contract_code, volume, direction,
+                                 client_order_id='', order_price_type=''):
         """
         param_name     type        non-optional   description
-        symbol              string      false               BTC, ETH,...
-        contract_type     string      false               this_week, next_week, quarter
-        contract_code     string      false              EOS190118
+        contract_code     string      false              BTC-USD
         volume              int          true                number of sheets
         direction            string      true                buy, sell
-        client_order_id    int          false
-        order_price_type string      false              lightning(default), lightning_fok, lightning_ioc
+        client_order_id    long        false
+        order_price_type string      false              不填，默认为“闪电平仓”，"lightning"：闪电平仓，"lightning_fok"：闪电平仓-FOK,"lightning_ioc"：闪电平仓-IOC
         """
-        params = {"volume":volume,
+        params = {"contract_code":contract_code,
+                  "volume":volume,
                   "direction":direction}
-        if symbol:
-            params["symbol"] = symbol
-        if contract_type:
-            params["contract_type"] = contract_type
-        if contract_code:
-            params["contract_code"] = contract_code
-        request_path = '/api/v1/lightning_close_position'
+        if client_order_id:
+            params["client_order_id"] = client_order_id
+        if order_price_type:
+            params["order_price_type"] = order_price_type
+        request_path = '/swap-api/v1/swap_lightning_close_position'
         return api_key_post(self.__url, request_path, params, self.__access_key, self.__secret_key)        
